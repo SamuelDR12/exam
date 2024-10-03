@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Registration Form</h2>
+<form id="registrationForm">
+    <label for="fullName">Full Name:</label>
+    <input type="text" id="fullName" name="fullName" required pattern="[A-Za-z0-9., ]+">
+    <span class="error" id="nameError"></span><br><br>
+
+    <label for="email">Email Address:</label>
+    <input type="email" id="email" name="email" required>
+    <span class="error" id="emailError"></span><br><br>
+
+    <label for="mobile">Mobile Number:</label>
+    <input type="text" id="mobile" name="mobile" required pattern="^09\d{9}$">
+    <span class="error" id="mobileError"></span><br><br>
+
+    <label for="dob">Date of Birth:</label>
+    <input type="date" id="dob" name="dob" required>
+    <br><br>
+
+    <label for="age">Age:</label>
+    <input type="text" id="age" name="age" readonly>
+    <br><br>
+
+    <label for="gender">Gender:</label>
+    <select id="gender" name="gender" required>
+        <option value="">Select Gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+    </select>
+    <br><br>
+
+    <button type="submit">Submit</button>
+</form>
+</body>
+
+<div id="result"></div>
+
+<script>
+$(document).ready(function() {
+    // Calculate date of birth when selected
+    $('#dob').on('change', function() {
+        const dob = new Date($(this).val());
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+        $('#age').val(age);
+    });
+
+    // Form submission using AJAX
+    $('#registrationForm').on('submit', function(event) {
+        event.preventDefault(); 
+
+        // Clear previous error messages
+        $('.error').text('');
+
+        // Validate inputs
+        let isValid = true;
+        if (!$('#fullName').val().match(/[A-Za-z0-9., ]+/)) {
+            $('#nameError').text('Invalid name format.');
+            isValid = false;
+        }
+        if (!$('#email').val().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            $('#emailError').text('Invalid email format.');
+            isValid = false;
+        }
+        if (!$('#mobile').val().match(/^09\d{9}$/)) {
+            $('#mobileError').text('Invalid mobile numbr format.');
+            isValid = false;
+        }
+
+        if (isValid) {
+            // AJAX request
+            $.ajax({
+                url: 'submit.php', 
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    $('#result').html('<p>' + response + '</p>');
+                },
+                error: function() {
+                    $('#result').html('<p>An error occurred while submitting the form.</p>');
+                }});
+        //  $.ajax({
+        //     url: 'submit.php',
+        //     type: 'POST',
+        //     data: $(this).serialize(),
+        //     success: function(response) {
+        //         $('#result').html('<p>' + response + '</p>');
+        //     },
+        //     error: function(jqXHR, textStatus, errorThrown) {
+        //         let errorMessage = 'An error occurred while submitting the form.';
+        //         if (jqXHR.status === 404) {
+        //             errorMessage = 'The requested page was not found (404).';
+        //         } else if (jqXHR.status === 500) {
+        //             errorMessage = 'Internal Server Error (500). Please try again later.';
+        //         } else {
+        //             errorMessage = 'Error: ' + textStatus + ' - ' + errorThrown;
+        //         }
+        //         $('#result').html('<p class="error">' + errorMessage + '</p>');
+        //         }
+        //     });
+        }
+    });
+});
+</script>
+
+
+</html>
